@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace GreeterApp
 {
@@ -8,6 +9,22 @@ namespace GreeterApp
         {
             //Greeter is a terminal application that greets old friends warmly,
             //and remembers new friends.
+            FileStream fs = new FileStream("friends.txt", FileMode.Open, FileAccess.Read);
+
+            StreamReader inputStream = new StreamReader(fs);
+
+            string lineIn;  // variable where data from file is stored
+            string[] fields = new string[3];
+
+            lineIn = inputStream.ReadLine();
+
+
+            //while (lineIn != null)
+            //{
+            //    Console.WriteLine(lineIn);
+            //    lineIn = inputStream.ReadLine();
+            //}
+
 
             //Display a title bar.
             Console.WriteLine("\t**********************************************");
@@ -23,16 +40,39 @@ namespace GreeterApp
             {
                 case "1":
                     Console.WriteLine("Case 1");
+                    Console.WriteLine("Enter a name");
+                    string selectedName = Console.ReadLine();
+                    Boolean exists = false;
+                    while (lineIn != null)
+                    {
+                        fields = lineIn.Split(',');
+                        if (fields[0] == selectedName)
+                        {
+                            exists = true;
+                            break;
+                        }
+                        lineIn = inputStream.ReadLine();
+                    }
+                    if (exists)
+                        Console.WriteLine("Welcome back {0}", fields[0]);
+                    else
+                        Console.WriteLine("A new user, yayy");
                     break;
                 case "2":
-                    Console.WriteLine("Case 2");
+                    while (lineIn != null)
+                    {
+                        fields = lineIn.Split(',');
+                        Console.WriteLine(fields[0]);
+                        lineIn = inputStream.ReadLine();
+                    }
                     break;
                 case "3":
                     return;
                 default:
                     Console.WriteLine("Unknown selection");
-                break;
+                    break;
             }
-            } 
+            inputStream.Close();
+        }
     }
 }
