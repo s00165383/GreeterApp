@@ -13,8 +13,6 @@ namespace GreeterApp
             string[] fields = new string[3];
             FileStream fs;
 
-
-
             //Display a title bar.
             Console.WriteLine("\t**********************************************");
             Console.WriteLine("\t***  Greeter - Hello old and new friends!  ***");
@@ -32,7 +30,8 @@ namespace GreeterApp
                 Console.WriteLine("1. Check if a friend exists.");
                 Console.WriteLine("2. See a list of all friends.");
                 Console.WriteLine("3. Add a friend.");
-                Console.WriteLine("4. Quit.\n");
+                Console.WriteLine("4. Delete User");
+                Console.WriteLine("5. Quit.\n");
                 string userChoice = Console.ReadLine();
                 switch (userChoice)
                 {
@@ -50,17 +49,17 @@ namespace GreeterApp
                                 if (exists)
                                 {
                                     Console.WriteLine("Welcome back {0}", fields[0]);
-                                    Console.WriteLine("\nWould you like to edit this friends details? (Y/N)");
-                                    string editChoice = Console.ReadLine();
-                                    if(editChoice == "Y")
-                                    Console.WriteLine("Edit choice.");
+                                    //Console.WriteLine("\nWould you like to edit this friends details? (Y/N)");
+                                    //string editChoice = Console.ReadLine();
+                                    //if(editChoice == "Y")
+                                    //Console.WriteLine("Edit choice.");
                                 }
 
                             }
                             lineIn = inputStream.ReadLine();
                         }
-                            if(!exists)
-                                Console.WriteLine("A new friend, yayy");
+                        if (!exists)
+                            Console.WriteLine("A new friend, yayy");
 
                         break;
                     case "2":
@@ -69,7 +68,6 @@ namespace GreeterApp
                             fields = lineIn.Split(',');
                             Console.WriteLine(fields[0]);
                             lineIn = inputStream.ReadLine();
-
                         }
                         break;
                     case "3":
@@ -88,6 +86,98 @@ namespace GreeterApp
                         wfs.Close();
                         break;
                     case "4":
+                        Console.WriteLine("Delete 1");
+                        Console.WriteLine("Enter a name");
+                        selectedName = Console.ReadLine();
+                        exists = false;
+                        while (lineIn != null)
+                        {
+                            fields = lineIn.Split(',');
+                            if (fields[0] == selectedName)
+                            {
+                                exists = true;
+                            }
+                            lineIn = inputStream.ReadLine();
+                        }
+                        //inputStream.Close();
+                        string tempFile = Path.GetTempFileName();
+
+                        //using (var sr = new StreamReader("friends.txt"))
+                        //using (var sw = new StreamWriter(tempFile))
+                        //{
+                        //Console.WriteLine("Delete 1");
+                        //Console.WriteLine("Enter a name");
+                        //selectedName = Console.ReadLine();
+                        //exists = false;
+
+
+                        //Reading from file
+                        //inputStream = new StreamReader(fs);
+                        //lineIn = inputStream.ReadLine();
+                        fs.Position = 0;
+                        StreamReader inputStream3 = new StreamReader(fs);
+                        lineIn = inputStream3.ReadLine();
+                        while (lineIn != null)
+                        {
+                            fields = lineIn.Split(',');
+                            //if (fields[0] == selectedName)
+                            //{
+                            //    exists = true;
+                            //}
+                            if (exists)
+                            {
+                                Console.WriteLine("\nWould you like to delete this friends details? (Y/N)");
+                                string deleteChoice = Console.ReadLine();
+                                if (deleteChoice == "Y")
+                                {
+                                    //Writing to file
+                                        FileStream wfs2 = new FileStream(tempFile, FileMode.Append, FileAccess.Write);
+                                        StreamWriter outputStream2 = new StreamWriter(wfs2);
+                                    if (fields[0] != selectedName)
+                                    {
+                                        outputStream2.WriteLine(lineIn);
+                                    }
+                                    outputStream2.Close();
+                                    wfs2.Close();
+                                }
+                            }
+                            lineIn = inputStream.ReadLine();
+                                inputStream.Close();
+                                File.Delete("friends.txt");
+                                File.Move(tempFile, "friends.txt");
+                        }
+                        
+                        // }
+
+
+                        //File.Delete("file.txt");
+                        //File.Move(tempFile, "file.txt");
+                        //Console.WriteLine("Delete 1");
+                        //Console.WriteLine("Enter a name");
+                        //selectedName = Console.ReadLine();
+                        //exists = false;
+                        //while (lineIn != null)
+                        //{
+                        //    fields = lineIn.Split(',');
+                        //    if (fields[0] == selectedName)
+                        //    {
+                        //        exists = true;
+                        //        if (exists)
+                        //        {
+                        //            Console.WriteLine("\nWould you like to delete this friends details? (Y/N)");
+                        //            string editChoice = Console.ReadLine();
+                        //            if (editChoice == "Y")
+                        //                Console.WriteLine("Edit choice.");
+                        //        }
+
+                        //    }
+                        //    lineIn = inputStream.ReadLine();
+                        //}
+                        //if (!exists)
+                        //    Console.WriteLine("A new friend, yayy");
+
+                        break;
+                    case "5":
                         return;
                     default:
                         Console.WriteLine("Unknown selection");
