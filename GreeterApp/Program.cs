@@ -10,7 +10,7 @@ namespace GreeterApp
             //Greeter is a terminal application that greets old friends warmly,
             //and remembers new friends.
             string lineIn;  // variable where data from file is stored
-            string[] fields = new string[3];
+            string[] fields = new string[5];
             FileStream fs;
 
             //Display a title bar.
@@ -49,6 +49,8 @@ namespace GreeterApp
                                 if (exists)
                                 {
                                     Console.WriteLine("We have a record for {0}", fields[0]);
+                                    Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", "Name", "Address Line 1", "Address Line 2", "Address Line 3", "Phone Number");
+                                    Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", fields[0], fields[1], fields[2], fields[3], fields[4]);
                                 }
 
                             }
@@ -59,26 +61,32 @@ namespace GreeterApp
 
                         break;
                     case "2":
-                        Console.WriteLine("Name\t\t\tLocation\t\t\tPhone");
+                        //Console.WriteLine("Name\t\t\t\tAddress Line 1\t\tAddress Line 2\t\tAddress Line 3\t\tPhone");
+                        Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", "Name","Address Line 1", "Address Line 2", "Address Line 3","Phone Number");
                         while (lineIn != null)
                         {
                             fields = lineIn.Split(',');
-                            Console.WriteLine("{0}\t\t\t{1}\t\t\t\t{2}", fields[0], fields[1], fields[2]);
+                            //Console.WriteLine("{0}\t\t\t{1}\t\t{2}\t\t\t{3}\t\t\t{4}", fields[0], fields[1], fields[2],fields[3], fields[4]);
+                            Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", fields[0], fields[1], fields[2], fields[3], fields[4]);
                             lineIn = inputStream.ReadLine();
                         }
                         break;
                     case "3":
                         Console.WriteLine("Enter new friends name");
                         string newName = Console.ReadLine().ToUpper();
-                        Console.WriteLine("Enter where friend lives");
-                        string newLocation = Console.ReadLine().ToUpper();
+                        Console.WriteLine("Enter new friends address line 1");
+                        string AddressLine1 = Console.ReadLine().ToUpper();
+                        Console.WriteLine("Enter new friends address line 2");
+                        string AddressLine2 = Console.ReadLine().ToUpper();
+                        Console.WriteLine("Enter new friends address line 3");
+                        string AddressLine3 = Console.ReadLine().ToUpper();
                         Console.WriteLine("Enter new friends number");
                         string newNumber = Console.ReadLine().ToUpper();
                         inputStream.Close();
                         //Writing to file
                         FileStream wfs = new FileStream("friends.txt", FileMode.Append, FileAccess.Write);
                         StreamWriter outputStream = new StreamWriter(wfs);
-                        outputStream.WriteLine("{0},{1},{2}", newName, newLocation, newNumber);
+                        outputStream.WriteLine("{0},{1},{2},{3},{4}", newName, AddressLine1, AddressLine2, AddressLine3, newNumber);
                         outputStream.Close();
                         wfs.Close();
                         break;
@@ -219,10 +227,12 @@ namespace GreeterApp
                         {
                             Console.WriteLine("\nWhich detail for {0} would you like to edit?", selectedName);
                             Console.WriteLine("1. {0}'s name", selectedName);
-                            Console.WriteLine("2. {0}'s location", selectedName);
-                            Console.WriteLine("3. {0}'s number", selectedName);
+                            Console.WriteLine("2. {0}'s address line 1", selectedName);
+                            Console.WriteLine("3. {0}'s address line 2", selectedName);
+                            Console.WriteLine("4. {0}'s address line 3", selectedName);
+                            Console.WriteLine("5. {0}'s number", selectedName);
                             string updateChoice = Console.ReadLine().ToUpper();
-                            if (updateChoice == "1" || updateChoice == "2" || updateChoice == "3")
+                            if (updateChoice == "1" || updateChoice == "2" || updateChoice == "3" || updateChoice == "4" || updateChoice == "5")
                             {
                                 Console.WriteLine("\nEnter the new value desired");
                                 string updateValue = Console.ReadLine().ToUpper();
@@ -241,7 +251,7 @@ namespace GreeterApp
                                         }
                                         else if (fields[0] == selectedName)
                                         {
-                                            outputStream2.WriteLine("{0},{1},{2}", updateValue, fields[1], fields[2]);
+                                            outputStream2.WriteLine("{0},{1},{2},{3},{4}", updateValue, fields[1], fields[2], fields[3], fields[4]);
                                         }
                                     }
                                     else if (updateChoice == "2")
@@ -252,7 +262,7 @@ namespace GreeterApp
                                         }
                                         else if (fields[0] == selectedName)
                                         {
-                                            outputStream2.WriteLine("{0},{1},{2}", fields[0], updateValue, fields[2]);
+                                            outputStream2.WriteLine("{0},{1},{2},{3},{4}", fields[0], updateValue, fields[2], fields[3], fields[4]);
                                         }
                                     }
                                     else if (updateChoice == "3")
@@ -263,7 +273,29 @@ namespace GreeterApp
                                         }
                                         else if (fields[0] == selectedName)
                                         {
-                                            outputStream2.WriteLine("{0},{1},{2}", fields[0], fields[1], updateValue);
+                                            outputStream2.WriteLine("{0},{1},{2},{3},{4}", fields[0], fields[1], updateValue, fields[3], fields[4]);
+                                        }
+                                    }
+                                    else if (updateChoice == "4")
+                                    {
+                                        if (fields[0] != selectedName)
+                                        {
+                                            outputStream2.WriteLine(lineIn);
+                                        }
+                                        else if (fields[0] == selectedName)
+                                        {
+                                            outputStream2.WriteLine("{0},{1},{2},{3},{4}", fields[0], fields[1], fields[2], updateValue, fields[4]);
+                                        }
+                                    }
+                                    else if (updateChoice == "5")
+                                    {
+                                        if (fields[0] != selectedName)
+                                        {
+                                            outputStream2.WriteLine(lineIn);
+                                        }
+                                        else if (fields[0] == selectedName)
+                                        {
+                                            outputStream2.WriteLine("{0},{1},{2},{3},{4}", fields[0], fields[1], fields[2], fields[3], updateValue);
                                         }
                                     }
                                     else
