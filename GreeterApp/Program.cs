@@ -151,58 +151,6 @@ namespace GreeterApp
                         }
 
                     case "5":
-                        //Console.WriteLine("Enter a name");
-                        //selectedName = Console.ReadLine();
-                        //exists = false;
-                        //while (lineIn != null)
-                        //{
-                        //    fields = lineIn.Split(',');
-                        //    if (fields[0] == selectedName)
-                        //    {
-                        //        exists = true;
-                        //    }
-                        //    lineIn = inputStream.ReadLine();
-                        //};
-                        //string tempFile2 = Path.GetTempFileName();
-
-
-                        //fs.Position = 0;
-                        //StreamReader inputStream4 = new StreamReader(fs);
-                        //lineIn = inputStream4.ReadLine();
-                        //while (lineIn != null)
-                        //{
-                        //    fields = lineIn.Split(',');
-                        //    if (exists)
-                        //    {
-                        //        Console.WriteLine("\nWould you like to delete this friends details? (Y/N)");
-                        //        string deleteChoice = Console.ReadLine();
-                        //        if (deleteChoice == "Y")
-                        //        {
-                        //            Console.WriteLine("Please re-enter your friends details");
-                        //            Console.WriteLine("Name");
-                        //            string updatedName = Console.ReadLine();
-                        //            Console.WriteLine("Location");
-                        //            string updatedLocation = Console.ReadLine();
-                        //            Console.WriteLine("Phone Number");
-                        //            string updatedNumber = Console.ReadLine();
-                        //            //Writing to file
-                        //            FileStream wfs2 = new FileStream(tempFile2, FileMode.Append, FileAccess.Write);
-                        //            StreamWriter outputStream2 = new StreamWriter(wfs2);
-                        //            if (fields[0] != selectedName)
-                        //            {
-                        //                outputStream2.WriteLine(lineIn);
-                        //            }
-                        //            else
-                        //                outputStream2.WriteLine("{0},{1},{2}", updatedName, updatedLocation, updatedNumber);
-                        //            outputStream2.Close();
-                        //            wfs2.Close();
-                        //        }
-                        //    lineIn = inputStream.ReadLine();
-                        //    }
-                        //    inputStream.Close();
-                        //    File.Delete("friends.txt");
-                        //    File.Move(tempFile2, "friends.txt");
-                        //}
                         Console.WriteLine("Enter a name");
                         selectedName = Console.ReadLine().ToUpper();
                         exists = false;
