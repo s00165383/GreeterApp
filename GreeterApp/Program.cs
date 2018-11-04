@@ -15,9 +15,9 @@ namespace GreeterApp
 
             //Display a title bar.
             Console.WriteLine("\t**********************************************");
-            Console.WriteLine("\t***  Greeter - Hello old and new friends!  ***");
+            Console.WriteLine("\t***  Welcome to Your Friend Library.  ***");
             Console.WriteLine("\t**********************************************");
-            Console.WriteLine("\nWelcome to Your Friend Library.");
+            //Console.WriteLine("\nWelcome to Your Friend Library.");
             Boolean exit = false;
             do
             {
@@ -27,7 +27,7 @@ namespace GreeterApp
                 lineIn = inputStream.ReadLine();
 
                 Console.WriteLine("\nWhat do you want to do?");
-                Console.WriteLine("1. Check if a friend exists.");
+                Console.WriteLine("1. Check if a friend exists and see their details.");
                 Console.WriteLine("2. See a list of all friends and their details.");
                 Console.WriteLine("3. Add a friend.");
                 Console.WriteLine("4. Delete a friend");
@@ -48,7 +48,7 @@ namespace GreeterApp
                                 exists = true;
                                 if (exists)
                                 {
-                                    Console.WriteLine("We have a record for {0}", fields[0]);
+                                    Console.WriteLine("\nWe have a record for {0}", fields[0]);
                                     Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", "Name", "Address Line 1", "Address Line 2", "Address Line 3", "Phone Number");
                                     Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", fields[0], fields[1], fields[2], fields[3], fields[4]);
                                 }
@@ -57,7 +57,7 @@ namespace GreeterApp
                             lineIn = inputStream.ReadLine();
                         }
                         if (!exists)
-                            Console.WriteLine("There is no record for {0}", selectedName);
+                            Console.WriteLine("\nThere is no record for {0}", selectedName);
 
                         break;
                     case "2":
