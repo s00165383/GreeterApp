@@ -284,4 +284,28 @@ namespace GreeterApp
             } while (!exit);
         }
     }
+
+    class Contact
+    {
+        public string Name { get; set; }
+        public string AddressLine1 { get; set; }
+        public string AddressLine2 { get; set; }
+        public string AddressLine3 { get; set; }
+        public string PhoneNumber { get; set; }
+
+        public Contact()
+        {
+             
+        }
+        public Contact(string name,string addressLine1, string addressLine2, string addressLine3, string phoneNum )
+        {
+            Name = name;
+            AddressLine1 = addressLine1;
+            AddressLine2 = addressLine2;
+            AddressLine3 = addressLine3;
+            PhoneNumber = phoneNum;
+        }
+
+
+    }
 }
