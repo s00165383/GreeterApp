@@ -7,8 +7,7 @@ namespace GreeterApp
     {
         static void Main(string[] args)
         {
-            //Greeter is a terminal application that greets old friends warmly,
-            //and remembers new friends.
+            //Greeter is a terminal application that stores friends contact information
             string lineIn;  // variable where data from file is stored
             string[] fields = new string[5];
             FileStream fs;
