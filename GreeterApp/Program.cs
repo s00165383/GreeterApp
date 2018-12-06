@@ -17,8 +17,6 @@ namespace GreeterApp
                 FileStream fs = new FileStream(FileName, FileMode.Append, FileAccess.Write);
                 //CryptoStream cStream = new CryptoStream(fStream, new AesManaged().CreateEncryptor(Key, IV), CryptoStreamMode.Write);
                 StreamWriter sWriter = new StreamWriter(fs);
-
-
                 sWriter.WriteLine(Data);
                 sWriter.Close();
                 fs.Close();
@@ -130,16 +128,21 @@ namespace GreeterApp
         {
             return Name + "," + AddressLine1 + "," + AddressLine2 + "," + AddressLine3 + "," + PhoneNumber;
         }
+        public string FormatOutput()
+        {
+            return String.Format("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", Name, AddressLine1, AddressLine2,AddressLine3,PhoneNumber);
+        }
 
     }
 
     class ContactsMemory
     {
-        public List<Contact> ContactList { get; set; }
-
+        //public List<Contact> ContactList { get; set; }
+        List<Contact> ContactList = new List<Contact>();
 
         public void GetContacts()
         {
+            ContactList.Clear();
             ProcessFile processFile = new ProcessFile();
             string Final = processFile.ReadFromFile("friends.txt");
             string[] result = Final.Split(new string[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
@@ -153,8 +156,9 @@ namespace GreeterApp
                 contact.AddressLine2 = values[2];
                 contact.AddressLine3 = values[3];
                 contact.PhoneNumber = values[4];
-                Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", contact.Name, contact.AddressLine1, contact.AddressLine2, contact.AddressLine3, contact.PhoneNumber);
+                ContactList.Add(contact);
             }
+            ContactList.ForEach(i => Console.WriteLine(i.FormatOutput()));
         }
         public void CreateContact()
         {
@@ -169,6 +173,7 @@ namespace GreeterApp
             Console.WriteLine("Enter new friends number");
             string newNumber = Console.ReadLine().ToUpper();
             Contact newContact = new Contact(newName, AddressLine1, AddressLine2, AddressLine3, newNumber);
+           // ContactList.Add(newContact);
             ProcessFile processFile = new ProcessFile();
             processFile.WriteToFile(newContact.ToString(), "friends.txt");
         }
@@ -190,7 +195,14 @@ namespace GreeterApp
                     {
                         Console.WriteLine("\nWe have a record for {0}", values[0]);
                         Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", "Name", "Address Line 1", "Address Line 2", "Address Line 3", "Phone Number");
-                        Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", values[0], values[1], values[2], values[3], values[4]);
+                        Contact contact = new Contact();
+                        contact.Name = values[0];
+                        contact.AddressLine1 = values[1];
+                        contact.AddressLine2 = values[2];
+                        contact.AddressLine3 = values[3];
+                        contact.PhoneNumber = values[4];
+                        Console.WriteLine(contact.FormatOutput());
+                       // Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", values[0], values[1], values[2], values[3], values[4]);
                     }
                 }
             }
