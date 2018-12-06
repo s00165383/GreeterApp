@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace GreeterApp
 {
@@ -10,41 +11,57 @@ namespace GreeterApp
         {
 
         }
-        public void WriteToFile(string Data, string FileName)
+        public void WriteToFile(List<Contact> Data, string FileName, byte[] Key, byte[] IV)
         {
             try
             {
-                FileStream fs = new FileStream(FileName, FileMode.Append, FileAccess.Write);
-                //CryptoStream cStream = new CryptoStream(fStream, new AesManaged().CreateEncryptor(Key, IV), CryptoStreamMode.Write);
-                StreamWriter sWriter = new StreamWriter(fs);
-                sWriter.WriteLine(Data);
+                FileStream fs = new FileStream(FileName, FileMode.OpenOrCreate, FileAccess.Write);
+                CryptoStream cStream = new CryptoStream(fs, new AesManaged().CreateEncryptor(Key, IV), CryptoStreamMode.Write);
+                StreamWriter sWriter = new StreamWriter(cStream);
+                Data.ForEach(i => sWriter.WriteLine(i.ToString()));
+                //sWriter.WriteLine(Data);
                 sWriter.Close();
+                cStream.Close();
                 fs.Close();
 
             }
             catch
             {
                 Console.WriteLine("error");
+                Console.ReadLine();
             }
 
         }
-        public string ReadFromFile(string FileName)
+        public string ReadFromFile(string FileName, byte[] Key, byte[] IV)
         {
             try
             {
-
-                FileStream fs = File.Open(FileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-                StreamReader sReader = new StreamReader(fs);
+                FileStream fs = File.Open(FileName, FileMode.OpenOrCreate);
+                CryptoStream cStream = new CryptoStream(fs, new AesManaged().CreateDecryptor(Key, IV), CryptoStreamMode.Read);
+                StreamReader sReader = new StreamReader(cStream);
                 string val = sReader.ReadToEnd();
                 sReader.Close();
+                cStream.Close();
                 fs.Close();
                 return val;
             }
 
-            catch
+            catch (CryptographicException e)
             {
-                Console.WriteLine("error");
-                return "error";
+
+                Console.WriteLine("A Cryptographic error occurred: {0}", e.Message);
+                Console.ReadLine();
+                return null;
+
+            }
+
+            catch (UnauthorizedAccessException e)
+            {
+
+                Console.WriteLine("A file error occurred: {0}", e.Message);
+                Console.ReadLine();
+                return null;
+
             }
         }
     }
@@ -53,55 +70,65 @@ namespace GreeterApp
     {
         static void Main(string[] args)
         {
-            ProcessFile processFile = new ProcessFile();
-            ContactsMemory contactsMemory = new ContactsMemory();
-            //Greeter is a terminal application that stores friends contact information
-            string lineIn;  // variable where data from file is stored
-            string[] fields = new string[5];
-            //Display a title bar.
-            Console.WriteLine("\t**********************************************");
-            Console.WriteLine("\t***  Welcome to Your Friend Library.  ***");
-            Console.WriteLine("\t**********************************************");
-            Boolean exit = false;
-            do
-            {
-                string Final = processFile.ReadFromFile("friends.txt");
-                lineIn = Final;
+            try {
+                AesManaged aesAlg = new AesManaged();//Automatically Generates A Key and IV If Not Specified.
 
-                Console.WriteLine("\nWhat do you want to do?");
-                Console.WriteLine("1. Check if a friend exists and see their details.");
-                Console.WriteLine("2. See a list of all friends and their details.");
-                Console.WriteLine("3. Add a friend.");
-                Console.WriteLine("4. Delete a friend");
-                Console.WriteLine("5. Update a friends details");
-                Console.WriteLine("6. Quit.\n");
-                string userChoice = Console.ReadLine();
-                switch (userChoice)
+
+                ProcessFile processFile = new ProcessFile();
+                ContactsMemory contactsMemory = new ContactsMemory();
+                //Greeter is a terminal application that stores friends contact information
+                //string lineIn;  // variable where data from file is stored
+                string[] fields = new string[5];
+                //Display a title bar.
+                Console.WriteLine("\t**********************************************");
+                Console.WriteLine("\t***  Welcome to Your Friend Library.  ***");
+                Console.WriteLine("\t**********************************************");
+                Boolean exit = false;
+                do
                 {
-                    case "1":
-                        contactsMemory.GetContact();
-                        break;
-                    case "2":
-                        contactsMemory.GetContacts();
-                        break;
-                    case "3":
-                        contactsMemory.CreateContact();
-                        break;
-                    case "4":
-                        contactsMemory.DeleteContact();
-                        break;
-                    case "5":
-                        contactsMemory.UpdateContact();
-                        break;
-                    case "6":
-                        return;
-                    default:
-                        Console.WriteLine("Unknown selection");
-                        break;
-                }
-            } while (!exit);
-        }
+                    //string Final = processFile.ReadFromFile("friends.txt",aesAlg.Key, aesAlg.IV);
+                    //lineIn = Final;
 
+                    Console.WriteLine("\nWhat do you want to do?");
+                    Console.WriteLine("1. Check if a friend exists and see their details.");
+                    Console.WriteLine("2. See a list of all friends and their details.");
+                    Console.WriteLine("3. Add a friend.");
+                    Console.WriteLine("4. Delete a friend");
+                    Console.WriteLine("5. Update a friends details");
+                    Console.WriteLine("6. Quit.\n");
+                    string userChoice = Console.ReadLine();
+                    switch (userChoice)
+                    {
+                        case "1":
+                            contactsMemory.GetContact(aesAlg.Key, aesAlg.IV);
+                            break;
+                        case "2":
+                            contactsMemory.GetContacts(aesAlg.Key, aesAlg.IV);
+                            break;
+                        case "3":
+                            contactsMemory.CreateContact(aesAlg.Key, aesAlg.IV);
+                            break;
+                        case "4":
+                            contactsMemory.DeleteContact(aesAlg.Key, aesAlg.IV);
+                            break;
+                        case "5":
+                            contactsMemory.UpdateContact(aesAlg.Key, aesAlg.IV);
+                            break;
+                        case "6":
+                            return;
+                        default:
+                            Console.WriteLine("Unknown selection");
+                            break;
+                    }
+                } while (!exit);
+            }
+            catch (Exception e)
+            {
+
+                Console.WriteLine(e.Message);
+
+            }
+        }
     }
 
     class Contact
@@ -140,27 +167,29 @@ namespace GreeterApp
         //public List<Contact> ContactList { get; set; }
         List<Contact> ContactList = new List<Contact>();
 
-        public void GetContacts()
+        public void GetContacts(byte[] Key, byte[] IV)
         {
             ContactList.Clear();
             ProcessFile processFile = new ProcessFile();
-            string Final = processFile.ReadFromFile("friends.txt");
+            string Final = processFile.ReadFromFile("friends.txt", Key, IV);
             string[] result = Final.Split(new string[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", "Name", "Address Line 1", "Address Line 2", "Address Line 3", "Phone Number");
             for (int i = 0; i < result.Length; i++)
             {
                 string[] values = result[i].Split(',');
-                Contact contact = new Contact();
-                contact.Name = values[0];
-                contact.AddressLine1 = values[1];
-                contact.AddressLine2 = values[2];
-                contact.AddressLine3 = values[3];
-                contact.PhoneNumber = values[4];
+                Contact contact = new Contact
+                {
+                    Name = values[0],
+                    AddressLine1 = values[1],
+                    AddressLine2 = values[2],
+                    AddressLine3 = values[3],
+                    PhoneNumber = values[4]
+                };
                 ContactList.Add(contact);
             }
             ContactList.ForEach(i => Console.WriteLine(i.FormatOutput()));
         }
-        public void CreateContact()
+        public void CreateContact(byte[] Key, byte[] IV)
         {
             Console.WriteLine("Enter new friends name");
             string newName = Console.ReadLine().ToUpper();
@@ -173,17 +202,19 @@ namespace GreeterApp
             Console.WriteLine("Enter new friends number");
             string newNumber = Console.ReadLine().ToUpper();
             Contact newContact = new Contact(newName, AddressLine1, AddressLine2, AddressLine3, newNumber);
-           // ContactList.Add(newContact);
+            ContactList.Add(newContact);
             ProcessFile processFile = new ProcessFile();
-            processFile.WriteToFile(newContact.ToString(), "friends.txt");
+            //processFile.WriteToFile(newContact.ToString(), "friends.txt", Key, IV);
+            processFile.WriteToFile(ContactList, "friends.txt", Key, IV);
+
         }
-        public void GetContact()
+        public void GetContact(byte[] Key, byte[] IV)
         {
             Console.WriteLine("Enter a name");
             string selectedName = Console.ReadLine().ToUpper();
             Boolean exists = false;
             ProcessFile processFile = new ProcessFile();
-            string Final = processFile.ReadFromFile("friends.txt");
+            string Final = processFile.ReadFromFile("friends.txt", Key, IV);
             string[] result = Final.Split(new string[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < result.Length; i++)
             {
@@ -195,12 +226,14 @@ namespace GreeterApp
                     {
                         Console.WriteLine("\nWe have a record for {0}", values[0]);
                         Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", "Name", "Address Line 1", "Address Line 2", "Address Line 3", "Phone Number");
-                        Contact contact = new Contact();
-                        contact.Name = values[0];
-                        contact.AddressLine1 = values[1];
-                        contact.AddressLine2 = values[2];
-                        contact.AddressLine3 = values[3];
-                        contact.PhoneNumber = values[4];
+                        Contact contact = new Contact
+                        {
+                            Name = values[0],
+                            AddressLine1 = values[1],
+                            AddressLine2 = values[2],
+                            AddressLine3 = values[3],
+                            PhoneNumber = values[4]
+                        };
                         Console.WriteLine(contact.FormatOutput());
                        // Console.WriteLine("{0,-20}\t{1,-15}\t{2,-15}\t{3,-15}\t{4,-10}", values[0], values[1], values[2], values[3], values[4]);
                     }
@@ -210,13 +243,14 @@ namespace GreeterApp
                 Console.WriteLine("\nThere is no record for {0}", selectedName);
 
         }
-        public void DeleteContact()
+        public void DeleteContact(byte[] Key, byte[] IV)
         {
+            ContactList.Clear();
             Console.WriteLine("Enter a name");
             string selectedName = Console.ReadLine().ToUpper();
             Boolean exists = false;
             ProcessFile processFile = new ProcessFile();
-            string Final = processFile.ReadFromFile("friends.txt");
+            string Final = processFile.ReadFromFile("friends.txt", Key, IV);
             string[] result = Final.Split(new string[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < result.Length; i++)
             {
@@ -238,9 +272,19 @@ namespace GreeterApp
                         string[] values = result[i].Split(',');
                         if (values[0] != selectedName)
                         {
-                            processFile.WriteToFile(result[i], tempFile);
+                            //processFile.WriteToFile(result[i], tempFile,Key,IV);
+                            Contact contact = new Contact
+                            {
+                                Name = values[0],
+                                AddressLine1 = values[1],
+                                AddressLine2 = values[2],
+                                AddressLine3 = values[3],
+                                PhoneNumber = values[4]
+                            };
+                            ContactList.Add(contact);
                         }
                     }
+                    processFile.WriteToFile(ContactList, tempFile, Key, IV);
                     File.Delete("friends.txt");
                     File.Move(tempFile, "friends.txt");
                 }
@@ -250,13 +294,14 @@ namespace GreeterApp
                 Console.WriteLine("A record for {0} could not be found", selectedName);
             }
         }
-        public void UpdateContact()
+        public void UpdateContact(byte[] Key, byte[] IV)
         {
+            ContactList.Clear();
             Console.WriteLine("Enter a name");
             String selectedName = Console.ReadLine().ToUpper();
             Boolean exists = false;
             ProcessFile processFile = new ProcessFile();
-            string Final = processFile.ReadFromFile("friends.txt");
+            string Final = processFile.ReadFromFile("friends.txt", Key, IV);
             string[] result = Final.Split(new string[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < result.Length; i++)
             {
@@ -287,55 +332,145 @@ namespace GreeterApp
                         {
                             if (values[0] != selectedName)
                             {
-                                processFile.WriteToFile(result[i], tempFile);
+                                Contact contact = new Contact
+                                {
+                                    Name = values[0],
+                                    AddressLine1 = values[1],
+                                    AddressLine2 = values[2],
+                                    AddressLine3 = values[3],
+                                    PhoneNumber = values[4]
+                                };
+                                ContactList.Add(contact);
+                                // processFile.WriteToFile(result[i], tempFile, Key, IV);
                             }
                             else if (values[0] == selectedName)
                             {
-                                processFile.WriteToFile(String.Format("{0},{1},{2},{3},{4}", updateValue, values[1], values[2], values[3], values[4]), tempFile);
+                                Contact contact = new Contact
+                                {
+                                    Name = updateValue,
+                                    AddressLine1 = values[1],
+                                    AddressLine2 = values[2],
+                                    AddressLine3 = values[3],
+                                    PhoneNumber = values[4]
+                                };
+                                ContactList.Add(contact);
+                                //   processFile.WriteToFile(String.Format("{0},{1},{2},{3},{4}", updateValue, values[1], values[2], values[3], values[4]), tempFile, Key, IV);
                             }
                         }
                         else if (updateChoice == "2")
                         {
                             if (values[0] != selectedName)
                             {
-                                processFile.WriteToFile(result[i], tempFile);
+                                Contact contact = new Contact
+                                {
+                                    Name = values[0],
+                                    AddressLine1 = values[1],
+                                    AddressLine2 = values[2],
+                                    AddressLine3 = values[3],
+                                    PhoneNumber = values[4]
+                                };
+                                ContactList.Add(contact);
+                                // processFile.WriteToFile(result[i], tempFile, Key, IV);
                             }
                             else if (values[0] == selectedName)
                             {
-                                processFile.WriteToFile(String.Format("{0},{1},{2},{3},{4}", values[0], updateValue, values[2], values[3], values[4]), tempFile);
+                                Contact contact = new Contact
+                                {
+                                    Name = values[0],
+                                    AddressLine1 = updateValue,
+                                    AddressLine2 = values[2],
+                                    AddressLine3 = values[3],
+                                    PhoneNumber = values[4]
+                                };
+                                ContactList.Add(contact);
+                                //  processFile.WriteToFile(String.Format("{0},{1},{2},{3},{4}", values[0], updateValue, values[2], values[3], values[4]), tempFile, Key, IV);
                             }
                         }
                         else if (updateChoice == "3")
                         {
                             if (values[0] != selectedName)
                             {
-                                processFile.WriteToFile(result[i], tempFile);
+                                Contact contact = new Contact
+                                {
+                                    Name = values[0],
+                                    AddressLine1 = values[1],
+                                    AddressLine2 = values[2],
+                                    AddressLine3 = values[3],
+                                    PhoneNumber = values[4]
+                                };
+                                ContactList.Add(contact);
+                                // processFile.WriteToFile(result[i], tempFile, Key, IV);
                             }
                             else if (values[0] == selectedName)
                             {
-                                processFile.WriteToFile(String.Format("{0},{1},{2},{3},{4}", values[0], values[1], updateValue, values[3], values[4]), tempFile);
+                                Contact contact = new Contact
+                                {
+                                    Name = values[0],
+                                    AddressLine1 = values[1],
+                                    AddressLine2 = updateValue,
+                                    AddressLine3 = values[3],
+                                    PhoneNumber = values[4]
+                                };
+                                ContactList.Add(contact);
+                                // processFile.WriteToFile(String.Format("{0},{1},{2},{3},{4}", values[0], values[1], updateValue, values[3], values[4]), tempFile, Key, IV);
                             }
                         }
                         else if (updateChoice == "4")
                         {
                             if (values[0] != selectedName)
                             {
-                                processFile.WriteToFile(result[i], tempFile);
+                                Contact contact = new Contact
+                                {
+                                    Name = values[0],
+                                    AddressLine1 = values[1],
+                                    AddressLine2 = values[2],
+                                    AddressLine3 = values[3],
+                                    PhoneNumber = values[4]
+                                };
+                                ContactList.Add(contact);
+                                //processFile.WriteToFile(result[i], tempFile, Key, IV);
                             }
                             else if (values[0] == selectedName)
                             {
-                                processFile.WriteToFile(String.Format("{0},{1},{2},{3},{4}", values[0], values[1], values[2], updateValue, values[4]), tempFile);
+                                Contact contact = new Contact
+                                {
+                                    Name = values[0],
+                                    AddressLine1 = values[1],
+                                    AddressLine2 = values[2],
+                                    AddressLine3 = updateValue,
+                                    PhoneNumber = values[4]
+                                };
+                                ContactList.Add(contact);
+                                //processFile.WriteToFile(String.Format("{0},{1},{2},{3},{4}", values[0], values[1], values[2], updateValue, values[4]), tempFile, Key, IV);
                             }
                         }
                         else if (updateChoice == "5")
                         {
                             if (values[0] != selectedName)
                             {
-                                processFile.WriteToFile(result[i], tempFile);
+                                Contact contact = new Contact
+                                {
+                                    Name = values[0],
+                                    AddressLine1 = values[1],
+                                    AddressLine2 = values[2],
+                                    AddressLine3 = values[3],
+                                    PhoneNumber = values[4]
+                                };
+                                ContactList.Add(contact);
+                                // processFile.WriteToFile(result[i], tempFile, Key, IV);
                             }
                             else if (values[0] == selectedName)
                             {
-                                processFile.WriteToFile(String.Format("{0},{1},{2},{3},{4}", values[0], values[1], values[2], values[3], updateValue), tempFile);
+                                Contact contact = new Contact
+                                {
+                                    Name = values[0],
+                                    AddressLine1 = values[1],
+                                    AddressLine2 = values[2],
+                                    AddressLine3 = values[3],
+                                    PhoneNumber = updateValue
+                                };
+                                ContactList.Add(contact);
+                                //  processFile.WriteToFile(String.Format("{0},{1},{2},{3},{4}", values[0], values[1], values[2], values[3], updateValue), tempFile, Key, IV);
                             }
                         }
 
@@ -350,6 +485,7 @@ namespace GreeterApp
 
 
                     //            //inputStream.Close();
+                    processFile.WriteToFile(ContactList, tempFile, Key, IV);
                     File.Delete("friends.txt");
                     File.Move(tempFile, "friends.txt");
 
